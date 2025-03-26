@@ -1,16 +1,23 @@
+# Al inicio de app.py, donde están las importaciones
 import os
-from flask import Flask, render_template, jsonify, send_from_directory # type: ignore
+import sys
+
+# Evitar la creación de archivos .pyc y carpetas __pycache__
+os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
+sys.dont_write_bytecode = True
+
+from flask import Flask, render_template, jsonify, send_from_directory
 import json
 import time
 import threading
 import re
 import shutil
-from watchdog.observers import Observer # type: ignore
-from watchdog.events import FileSystemEventHandler # type: ignore
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 # Importaciones de nuestros módulos
 from config.config import COMPONENTES_DIR, EXTENSION_DIR
-from extension.extension_builder import generar_extension_files
+from builders.extension_builder import generar_extension_files  # Ruta actualizada
 
 # Configuración
 PUERTO = 8000
