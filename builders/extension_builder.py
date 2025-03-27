@@ -24,9 +24,15 @@ def generar_extension_files():
         component_manager.update_components()
         
         # Generar archivos de la extensión
-        generar_popup_html(config)
-        generar_manifest_json()
-        generar_archivos_script()
+        if not generar_popup_html(config):
+            print("Error: Falló la generación de popup.html")
+            return False
+        if not generar_manifest_json():
+            print("Error: Falló la generación de manifest.json")
+            return False
+        if not generar_archivos_script():
+            print("Error: Falló la generación de archivos de script")
+            return False
         
         # Eliminar carpetas __pycache__ que pueden causar problemas
         limpiar_pycache()
@@ -40,6 +46,11 @@ def generar_extension_files():
 def generar_popup_html(config):
     """Genera el archivo popup.html a partir de las plantillas"""
     try:
+        # Validar existencia de COMPONENTES_DIR
+        if not os.path.exists(COMPONENTES_DIR) or not os.path.isdir(COMPONENTES_DIR):
+            print(f"Error: El directorio de componentes {COMPONENTES_DIR} no existe o no es válido")
+            return False
+        
         # Rutas de plantillas
         templates_dir = os.path.join(BASE_DIR, "templates")
         popup_template_path = os.path.join(templates_dir, "popup_template.html")
@@ -60,9 +71,24 @@ def generar_popup_html(config):
             print("Error: No se pudieron leer las plantillas HTML")
             return False
         
+        # MODIFICACIÓN: Escanear directamente la carpeta de componentes
+        componentes_detectados = []
+        for archivo in os.listdir(COMPONENTES_DIR):
+            if archivo.endswith('.js'):
+                ruta_completa = os.path.join(COMPONENTES_DIR, archivo)
+                tag = extraer_nombre_componente(ruta_completa)
+                if tag:
+                    componentes_detectados.append({
+                        "archivo": archivo,
+                        "tag": tag
+                    })
+                    print(f"Componente detectado para extensión: {archivo} - Tag: {tag}")
+                else:
+                    print(f"Advertencia: No se pudo extraer el tag del archivo {archivo}")
+        
         # Generar HTML para cada componente
         componentes_html = ""
-        for comp in config["componentes"]:
+        for comp in componentes_detectados:
             if comp.get("tag"):  # Solo incluir si se detectó la etiqueta
                 nombre_visible = comp["tag"].replace("-", " ").title()
                 descripcion = "Un componente web personalizado"
@@ -95,14 +121,29 @@ def generar_popup_html(config):
             if css_content:
                 write_file(css_dest, css_content)
         
-        print("Archivo popup.html generado correctamente")
+        print(f"Archivo popup.html generado correctamente con {len(componentes_detectados)} componentes")
         return True
     except Exception as e:
         print(f"Error al generar popup.html: {e}")
         return False
 
+def extraer_nombre_componente(ruta_archivo):
+    """Extrae el nombre del componente web definido en un archivo JavaScript"""
+    try:
+        with open(ruta_archivo, 'r', encoding='utf-8') as f:
+            contenido = f.read()
+            
+        # Buscar definición de Web Component
+        match = re.search(r'customElements\.define\([\'"]([a-zA-Z0-9-]+)[\'"]', contenido)
+        if match:
+            return match.group(1)
+        return None
+    except Exception as e:
+        print(f"Error al analizar {ruta_archivo}: {e}")
+        return None
+
 def generar_manifest_json():
-    """Genera el archivo manifest.json para la extensión"""
+    """Genera el archivo manifest.json para la extensión dinámicamente"""
     try:
         # Usar plantilla externa para manifest.json
         manifest_template_path = os.path.join(BASE_DIR, "templates", "manifest_template.json")
@@ -116,9 +157,35 @@ def generar_manifest_json():
             print("Error: No se pudo leer la plantilla de manifest.json")
             return False
         
+        # Escanear componentes disponibles para información dinámica
+        componentes_detectados = []
+        for archivo in os.listdir(COMPONENTES_DIR):
+            if archivo.endswith('.js'):
+                ruta_completa = os.path.join(COMPONENTES_DIR, archivo)
+                tag = extraer_nombre_componente(ruta_completa)
+                if tag:
+                    componentes_detectados.append({
+                        "archivo": archivo,
+                        "tag": tag
+                    })
+        
+        # Actualizar dinámicamente la versión basada en la fecha y cantidad de componentes
+        import json
+        manifest_data = json.loads(manifest_json)
+        
+        # Actualizar versión con formato año.mes.día.cantidad_componentes
+        version_base = time.strftime("%Y.%m.%d")
+        manifest_data["version"] = f"{version_base}.{len(componentes_detectados)}"
+        
+        # Actualizar descripción con la cantidad de componentes
+        manifest_data["description"] = f"Colección de {len(componentes_detectados)} componentes web personalizados"
+        
+        # Convertir de vuelta a JSON con formato legible
+        manifest_json_actualizado = json.dumps(manifest_data, indent=2)
+        
         # Escribir el archivo manifest.json
-        write_file(os.path.join(EXTENSION_DIR, "manifest.json"), manifest_json)
-        print("Archivo manifest.json generado correctamente")
+        write_file(os.path.join(EXTENSION_DIR, "manifest.json"), manifest_json_actualizado)
+        print(f"Archivo manifest.json generado dinámicamente con información de {len(componentes_detectados)} componentes")
         return True
     except Exception as e:
         print(f"Error al generar manifest.json: {e}")
