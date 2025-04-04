@@ -1,5 +1,4 @@
 from utils.file_manager import read_file, write_file, remove_file, cargar_configuracion
-from components.component_manager import ComponentManager
 from config.config import COMPONENTES_DIR, EXTENSION_DIR, SYSTEM_FILES, BASE_DIR
 import os
 import time
@@ -10,19 +9,19 @@ def generar_extension_files():
     """Genera los archivos de la extensión basados en la configuración actual"""
     try:
         print("Iniciando generación de archivos de extensión...")
-        
+
         # Cargar configuración
         config = cargar_configuracion()
-        
+
         # Asegurar que existe el directorio de componentes de la extensión
         components_js_dir = os.path.join(EXTENSION_DIR, "js", "components")
         if not os.path.exists(components_js_dir):
             os.makedirs(components_js_dir)
             print(f"Directorio creado: {components_js_dir}")
-        
+
         # Limpiar archivos JS de componentes antiguos
         archivos_componentes_actuales = [comp["archivo"] for comp in config["componentes"]]
-        
+
         # Eliminar archivos de componentes que ya no existen
         for archivo in os.listdir(components_js_dir):
             ruta_archivo = os.path.join(components_js_dir, archivo)
@@ -32,37 +31,28 @@ def generar_extension_files():
                     print(f"Archivo eliminado de la extensión: {archivo}")
                 except Exception as e:
                     print(f"Error al eliminar archivo {archivo}: {e}")
-        
-        # Copiar todos los archivos JS de componentes actuales
-        for comp in config["componentes"]:
-            ruta_origen = os.path.join(COMPONENTES_DIR, comp["archivo"])
-            
-            # Verificar si el archivo existe antes de intentar copiarlo
-            if not os.path.exists(ruta_origen):
-                print(f"Advertencia: El archivo {comp['archivo']} no existe en el directorio de componentes. Saltando...")
-                continue
-                
-            ruta_destino = os.path.join(components_js_dir, comp["archivo"])
-            
-            try:
-                with open(ruta_origen, 'r', encoding='utf-8') as f_origen:
-                    contenido = f_origen.read()
-                    
-                with open(ruta_destino, 'w', encoding='utf-8') as f_destino:
-                    f_destino.write(contenido)
-                print(f"Archivo copiado exitosamente: {comp['archivo']}")
-            except Exception as e:
-                print(f"Error al copiar {comp['archivo']}: {e}")
-        
-        # Crear instancia del manejador de componentes
-        component_manager = ComponentManager(config)
-        
-        # Limpiar componentes antiguos
-        component_manager.clean_old_components()
-        
-        # Actualizar componentes
-        component_manager.update_components()
-        
+
+        # Recorrer todos los archivos .js, incluyendo subcarpetas
+        for root, _, files in os.walk(COMPONENTES_DIR):
+            for file in files:
+                if file.endswith('.js'):
+                    ruta_origen = os.path.join(root, file)
+                    ruta_relativa = os.path.relpath(ruta_origen, COMPONENTES_DIR)
+                    ruta_destino = os.path.join(components_js_dir, ruta_relativa)
+
+                    # Crear directorios necesarios en el destino
+                    os.makedirs(os.path.dirname(ruta_destino), exist_ok=True)
+
+                    try:
+                        with open(ruta_origen, 'r', encoding='utf-8') as f_origen:
+                            contenido = f_origen.read()
+
+                        with open(ruta_destino, 'w', encoding='utf-8') as f_destino:
+                            f_destino.write(contenido)
+                        print(f"Archivo copiado exitosamente: {ruta_relativa}")
+                    except Exception as e:
+                        print(f"Error al copiar {ruta_relativa}: {e}")
+
         # Generar archivos de la extensión
         if not generar_popup_html(config):
             print("Error: Falló la generación de popup.html")
@@ -73,10 +63,10 @@ def generar_extension_files():
         if not generar_archivos_script():
             print("Error: Falló la generación de archivos de script")
             return False
-        
+
         # Eliminar carpetas __pycache__ que pueden causar problemas
         limpiar_pycache()
-        
+
         print("Archivos de extensión generados con éxito")
         return True
     except Exception as e:
@@ -187,42 +177,43 @@ def generar_manifest_json():
     try:
         # Usar plantilla externa para manifest.json
         manifest_template_path = os.path.join(BASE_DIR, "templates", "manifest_template.json")
-        
+
         if not os.path.exists(manifest_template_path):
             print(f"Error: Plantilla manifest_template.json no encontrada en {manifest_template_path}")
             return False
-        
+
         manifest_json = read_file(manifest_template_path)
         if not manifest_json:
             print("Error: No se pudo leer la plantilla de manifest.json")
             return False
-        
+
         # Escanear componentes disponibles para información dinámica
         componentes_detectados = []
-        for archivo in os.listdir(COMPONENTES_DIR):
-            if archivo.endswith('.js'):
-                ruta_completa = os.path.join(COMPONENTES_DIR, archivo)
-                tag = extraer_nombre_componente(ruta_completa)
-                if tag:
-                    componentes_detectados.append({
-                        "archivo": archivo,
-                        "tag": tag
-                    })
-        
+        for root, _, files in os.walk(COMPONENTES_DIR):
+            for archivo in files:
+                if archivo.endswith('.js'):
+                    ruta_completa = os.path.join(root, archivo)
+                    tag = extraer_nombre_componente(ruta_completa)
+                    if tag:
+                        componentes_detectados.append({
+                            "archivo": os.path.relpath(ruta_completa, COMPONENTES_DIR),
+                            "tag": tag
+                        })
+
         # Actualizar dinámicamente la versión basada en la fecha y cantidad de componentes
         import json
         manifest_data = json.loads(manifest_json)
-        
+
         # Actualizar versión con formato año.mes.día.cantidad_componentes
         version_base = time.strftime("%Y.%m.%d")
         manifest_data["version"] = f"{version_base}.{len(componentes_detectados)}"
-        
+
         # Actualizar descripción con la cantidad de componentes
         manifest_data["description"] = f"Colección de {len(componentes_detectados)} componentes web personalizados"
-        
+
         # Convertir de vuelta a JSON con formato legible
         manifest_json_actualizado = json.dumps(manifest_data, indent=2)
-        
+
         # Escribir el archivo manifest.json
         write_file(os.path.join(EXTENSION_DIR, "manifest.json"), manifest_json_actualizado)
         print(f"Archivo manifest.json generado dinámicamente con información de {len(componentes_detectados)} componentes")

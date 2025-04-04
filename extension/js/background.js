@@ -60,27 +60,34 @@ chrome.runtime.onInstalled.addListener(() => {
   async function getScriptContent(scriptSrc) {
     // Revisamos primero si ya tenemos el script en caché
     if (scriptCache[scriptSrc]) {
-      console.log(`Usando script en caché para: ${scriptSrc}`);
-      return scriptCache[scriptSrc];
+        console.log(`Usando script en caché para: ${scriptSrc}`);
+        return scriptCache[scriptSrc];
     }
-    
-    // Si no está en caché, lo cargamos
+
     console.log(`Cargando script: ${scriptSrc}`);
-    
     try {
-      const response = await fetch(chrome.runtime.getURL(`js/components/${scriptSrc}`));
-      if (!response.ok) {
-        throw new Error(`No se pudo cargar el script: ${response.status} ${response.statusText}`);
-      }
-      
-      const scriptContent = await response.text();
-      
-      // Guardamos en caché para futuros usos
-      scriptCache[scriptSrc] = scriptContent;
-      
-      return scriptContent;
+        const response = await fetch(chrome.runtime.getURL(`js/components/${scriptSrc}`));
+        if (!response.ok) {
+            throw new Error(`No se pudo cargar el script: ${response.status} ${response.statusText}`);
+        }
+
+        const scriptContent = await response.text();
+
+        // Detectar dependencias básicas
+        const dependencyRegex = /\/\/\s*@requires\s+([\w\-\.\/]+)/g;
+        let match;
+        while ((match = dependencyRegex.exec(scriptContent)) !== null) {
+            const dependencySrc = match[1];
+            console.log(`Detectada dependencia: ${dependencySrc}`);
+            await getScriptContent(dependencySrc); // Cargar dependencia recursivamente
+        }
+
+        // Guardamos en caché para futuros usos
+        scriptCache[scriptSrc] = scriptContent;
+
+        return scriptContent;
     } catch (error) {
-      console.error('Error cargando script:', error);
-      throw error;
+        console.error('Error cargando script:', error);
+        throw error;
     }
   }

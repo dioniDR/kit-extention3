@@ -32,15 +32,13 @@ async function insertComponent(tagName, scriptSrc) {
         const scriptExists = Array.from(document.querySelectorAll('script')).some(
             script => script.src.includes(scriptSrc)
         );
-        
-        // Si el script no está cargado, lo cargamos primero
+
         if (!scriptExists) {
             const script = document.createElement('script');
             const scriptUrl = chrome.runtime.getURL(`js/components/${scriptSrc}`);
             console.log('URL generada para el script:', scriptUrl);
             script.src = scriptUrl;
-            
-            // Crear una promesa para manejar la carga del script
+
             await new Promise((resolve, reject) => {
                 script.onload = () => {
                     console.log(`Script ${scriptSrc} cargado correctamente`);
@@ -52,8 +50,35 @@ async function insertComponent(tagName, scriptSrc) {
                 document.head.appendChild(script);
             });
         }
-        
-        // Ahora insertamos el componente
+
+        // Cargar CSS relacionado
+        const cssUrl = chrome.runtime.getURL(`css/components/${tagName}.css`);
+        const cssExists = Array.from(document.querySelectorAll('link')).some(
+            link => link.href.includes(cssUrl)
+        );
+
+        if (!cssExists) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = cssUrl;
+
+            await new Promise((resolve, reject) => {
+                link.onload = () => {
+                    console.log(`CSS ${cssUrl} cargado correctamente`);
+                    resolve();
+                };
+                link.onerror = () => {
+                    console.warn(`CSS no encontrado: ${cssUrl}`);
+                    resolve(); // Continuar incluso si no se encuentra el CSS
+                };
+                document.head.appendChild(link);
+            });
+        }
+
+        // Esperar a que el componente esté definido
+        await customElements.whenDefined(tagName);
+
+        // Insertar el componente
         insertComponentTag(tagName);
         return true;
     } catch (error) {

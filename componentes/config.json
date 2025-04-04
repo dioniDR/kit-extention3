@@ -1,16 +1,12 @@
 {
     "componentes": [
         {
-            "archivo": "openia-chat.js",
-            "tag": "openia-chat"
-        },
-        {
             "archivo": "api-consola.js",
             "tag": "api-consola"
         },
         {
-            "archivo": "todo-list.js",
-            "tag": "todo-list"
+            "archivo": "chat-capture.js",
+            "tag": "chat-capture"
         }
     ]
 }
