@@ -68,7 +68,7 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log(`Cargando script: ${scriptSrc}`);
     
     try {
-      const response = await fetch(chrome.runtime.getURL(`js/${scriptSrc}`));
+      const response = await fetch(chrome.runtime.getURL(`js/components/${scriptSrc}`));
       if (!response.ok) {
         throw new Error(`No se pudo cargar el script: ${response.status} ${response.statusText}`);
       }

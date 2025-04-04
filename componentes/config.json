@@ -2,27 +2,15 @@
     "componentes": [
         {
             "archivo": "openia-chat.js",
-            "tag": "openai-chat"
+            "tag": "openia-chat"
         },
         {
-            "archivo": "chat-capture.js",
-            "tag": "chat-capture"
-        },
-        {
-            "archivo": "contador.js",
-            "tag": "contador-app"
-        },
-        {
-            "archivo": "word-collector.js",
-            "tag": "word-collector"
+            "archivo": "api-consola.js",
+            "tag": "api-consola"
         },
         {
             "archivo": "todo-list.js",
             "tag": "todo-list"
-        },
-        {
-            "archivo": "cargador-dinamico.js",
-            "tag": "preguntas-menu"
         }
     ]
 }

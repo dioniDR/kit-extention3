@@ -36,7 +36,7 @@ async function insertComponent(tagName, scriptSrc) {
         // Si el script no está cargado, lo cargamos primero
         if (!scriptExists) {
             const script = document.createElement('script');
-            const scriptUrl = chrome.runtime.getURL(`js/${scriptSrc}`);
+            const scriptUrl = chrome.runtime.getURL(`js/components/${scriptSrc}`);
             console.log('URL generada para el script:', scriptUrl);
             script.src = scriptUrl;
             
