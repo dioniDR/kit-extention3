@@ -1,0 +1,89 @@
+# Python Project .gitignore
+# =========================
+
+# Python bytecode files and cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+.virtualenv/
+.python-version
+pyvenv.cfg
+
+# Dependency directories
+# ====================
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+.Python
+
+# Poetry
+.poetry/
+poetry.lock
+.python-version
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+*.iws
+.idea_modules/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Environment files
+.env
+.env.*
+!.env.example
+.envrc
+
+# Build and distribution directories
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+wheels/
+*.manifest
+*.spec
+target/
+MANIFEST
+
+# System files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.*~
+*.bak
+*.tmp
+*.log
+.directory
+
+# Project specific (customize as needed)
+# =====================================
+# Add any project-specific patterns below
+
