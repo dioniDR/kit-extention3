@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Fondo circular -->
+  <circle cx="24" cy="24" r="22" fill="#4361ee" />
+  
+  <!-- Componente web (simbolizado como etiquetas o brackets) -->
+  <path d="M15 17 L11 24 L15 31" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <path d="M33 17 L37 24 L33 31" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  
+  <!-- Elemento central (representando un componente) -->
+  <rect x="19" y="14" width="10" height="10" rx="2" fill="#ffcc29" />
+  <rect x="19" y="27" width="10" height="7" rx="2" fill="#f8f9fa" />
+  
+  <!-- Puntos de conexión -->
+  <circle cx="24" cy="10" r="1.5" fill="white" />
+  <circle cx="24" cy="38" r="1.5" fill="white" />
+  <circle cx="10" cy="24" r="1.5" fill="white" />
+  <circle cx="38" cy="24" r="1.5" fill="white" />
+</svg>

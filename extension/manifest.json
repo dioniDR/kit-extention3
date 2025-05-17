@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Kit de Herramientas Web",
-  "version": "2025.04.04.3",
-  "description": "Colecci\u00f3n de 3 componentes web personalizados",
+  "version": "2025.05.16.0",
+  "description": "Colecci\u00f3n de 0 componentes web personalizados",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

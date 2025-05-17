@@ -1,12 +1,3 @@
 {
-    "componentes": [
-        {
-            "archivo": "api-consola.js",
-            "tag": "api-consola"
-        },
-        {
-            "archivo": "chat-capture.js",
-            "tag": "chat-capture"
-        }
-    ]
+    "componentes": []
 }
